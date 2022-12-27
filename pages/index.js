@@ -14,10 +14,10 @@ export default function Home({ products, bannerData}) {
         <p>Stuffs</p>
       </div>
       <div className="products-container">
-        {['product 1', 'product2'].map((product) => product)}
+        {products?.map((product) => <Product key={product._id} product={product}/>)}
       </div>
 
-      <FooterBanner></FooterBanner>
+      <FooterBanner footerBanner={bannerData && bannerData[0] }></FooterBanner>
     </>
   )
 }
