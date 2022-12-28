@@ -6,12 +6,52 @@ import toast from 'react-hot-toast';
 
 import { useStateContext } from '../context/StateContext';
 import { urlFor } from '../lib/client';
+import getStripe from '../lib/getStripe'
 
 export default function Cart() {
 
   const cartRef = useRef();
   const { totalPrice, totalQuantities, cartItems, setShowCart, toggleCartItemQuantity, onRemove} = useStateContext();
 
+  const handleCheckout = async () => {
+    try {
+      const stripe = await getStripe();
+
+      const response = await fetch('/api/stripe', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${process.env.NEXT_PUBLIC_STRIPE_SECRET_KEY}`,
+        },
+        body: JSON.stringify(cartItems),
+      });
+
+      console.log("its in")
+  
+      if(response.status === 500) return; //status o statusCode?
+      
+      const data = await response.json();
+  
+      toast.loading('Redirecting...');
+  
+      stripe.redirectToCheckout({ sessionId: data.id }); 
+    } catch (e) {
+      switch (e.type) {
+        case 'StripeCardError':
+          console.log(`A payment error occurred: ${e.message}`);
+          break;
+        case 'StripeInvalidRequestError':
+          console.log('An invalid request occurred.');
+          break;
+          case 'StripePermissionError':
+            console.log('Se produjo un error del lado de Stripe.');
+            break;
+        default:
+          console.log('Another problem occurred, maybe unrelated to Stripe.');
+          break;
+      }
+    }
+  }
   return (
     <div className='cart-wrapper' ref={cartRef}>
       <div className='cart-container'>
@@ -78,7 +118,7 @@ export default function Cart() {
               <h3>${totalPrice}</h3>
             </div>
             <div className="btn-container">
-              <button type="button" className="btn" onClick="">
+              <button type="button" className="btn" onClick={handleCheckout}>
                 Pay with Stripe
               </button>
             </div>

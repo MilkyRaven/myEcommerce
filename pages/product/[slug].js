@@ -10,7 +10,13 @@ export default function ProductDetails({ product, products }) {
     
     const { image, name, details, price } = product;
     const [index, setIndex] = useState(0);
-    const { decQty, incQty, qty, onAdd} = useStateContext();
+    const { decQty, incQty, qty, onAdd, setShowCart} = useStateContext();
+
+    const handleBuyNow = () => {
+        onAdd(product, qty);
+
+        setShowCart(true);
+    }
 
     return (
         <div>
@@ -24,7 +30,8 @@ export default function ProductDetails({ product, products }) {
                     </div>
                     <div className='small-images-container'>
                         {image?.map((item, i)=> (
-                            <img 
+                            <img
+                            key={i} 
                             src={urlFor(item)}
                             width={100}
                             className={ i === index ? 'small-image selected image' : 'small-image'}
@@ -53,7 +60,7 @@ export default function ProductDetails({ product, products }) {
                             <h3>Quantity:</h3>
                             <p className='quantity-desc'>
                                 <span className='minus' onClick={decQty}><AiOutlineMinus></AiOutlineMinus></span>
-                                <span className='num' onClick="">{qty}</span>
+                                <span className='num'>{qty}</span>
                                 <span className='plus' onClick={incQty}><AiOutlinePlus></AiOutlinePlus></span>
                             </p>
                         </div>
@@ -63,8 +70,8 @@ export default function ProductDetails({ product, products }) {
                             onClick={() => onAdd(product, qty)}>Add to Cart
                             </button>
                             <button type="button"
-                            className='buy-now'
-                            onClick="">Buy Now
+                            className="buy-now"
+                            onClick={handleBuyNow}>Buy Now
                             </button>
                         </div>
                     </div>
@@ -111,8 +118,6 @@ export const getStaticProps = async ({ params: { slug } }) => {
 
     const product = await client.fetch(query);
     const products = await client.fetch(productsQuery);
-
-    console.log(product);
 
     return {
         props: { products, product }
